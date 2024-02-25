@@ -7,13 +7,38 @@ class Item {
     }
 }
 
+// funcion para ingresar un valor con una ventana emergente de sweetalert
+function ingresarValor() {
+    return new Promise((resolve, reject) => {
+        Swal.fire({
+            title: 'Ingrese un valor',
+            input: 'number',
+            showCancelButton: true,
+            confirmButtonText: 'Aceptar',
+            cancelButtonText: 'Cancelar',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Debe ingresar un valor';
+                }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                resolve(result.value);
+            } else {
+                reject('Operación cancelada');
+            }
+        });
+    });
+    
+}
+
 const items = [];
 let totalItems = 0;
 
 function probar(datos){
     console.log(datos);
 }
-
+/*
 function openPopup(id) {
 
     // Create popup window
@@ -39,7 +64,7 @@ function openPopup(id) {
             popup.document.body.appendChild(quantityInputPopup);
             popup.document.body.appendChild(updateButton);
 }
-
+*/
 function agregar(Codigo, Material, MaxMaterial) {
     if (Material !== '') {
         totalItems++;
@@ -69,7 +94,7 @@ function agregar(Codigo, Material, MaxMaterial) {
         quantityInput.type = 'number';
         quantityInput.value = MaxMaterial;
         quantityInput.addEventListener('click', function() {
-            openPopup(quantityInput.id);
+            quantityInput.value = ingresarValor();
         });
 
         // Creo el elemento Cantidad Maxima
