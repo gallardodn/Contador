@@ -7,33 +7,128 @@ class Item {
     }
 }
 
+
 // funcion para ingresar un valor con una ventana emergente de sweetalert
-function ingresarValor() {
-    return new Promise((resolve, reject) => {
-        Swal.fire({
-            title: 'Ingrese un valor',
-            input: 'number',
-            showCancelButton: true,
-            confirmButtonText: 'Aceptar',
-            cancelButtonText: 'Cancelar',
-            inputValidator: (value) => {
-                if (!value) {
-                    return 'Debe ingresar un valor';
-                }
+async function ingresarValor() {
+    const result = await Swal.fire({
+        title: 'Ingrese un valor',
+        input: 'number',
+        showCancelButton: true,
+        confirmButtonText: 'Aceptar',
+        cancelButtonText: 'Cancelar',
+        inputValidator: (value) => {
+            if (isNaN(value)) {
+                return 'Debe ingresar un valor numérico';
             }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                resolve(result.value);
-            } else {
-                reject('Operación cancelada');
-            }
-        });
+        }
     });
-    
+    probar(`EL resultado es: ${result}`);
+    probar(`EL valor del resultado es: ${result.value}`);
+    if (result.isConfirmed) {
+        probar(result.value);
+        return result.value;
+    } else {
+        throw new Error('Operación cancelada');
+    }
 }
 
 const items = [];
 let totalItems = 0;
+
+function probar(datos){
+    console.log(datos);
+}
+
+function agregar(Codigo, Material, varMaterial, MaxMaterial) {
+    if (Material !== '') {
+        totalItems++;
+        var itemDiv = document.createElement('div');
+        probar("items totales ",totalItems);
+
+        // Creo el elemento Codigo
+        var itemCode = document.createElement('span');
+        itemCode.id = `newCodigo${totalItems}`;
+        itemCode.classList.add('newCodigo');
+        itemCode.type = 'text';
+        itemCode.textContent = Codigo;
+        itemCode.readOnly = true; // Set the input element as read-only
+
+        // Creo el elemento Material
+        var itemNameInput = document.createElement('span');
+        itemNameInput.id = `newItemInput${totalItems}`;
+        itemNameInput.classList.add('newItemInput');
+        itemNameInput.type = 'text';
+        itemNameInput.textContent = Material;
+        
+        // Creo el elemento Cantidad Variable
+        var quantityInput = document.createElement('input');
+        quantityInput.id = `newQuantityInput${totalItems}`;
+        quantityInput.classList.add('newQuantityInput');
+        quantityInput.type = 'number';
+        quantityInput.value = varMaterial;
+        quantityInput.addEventListener('click', async function() {
+            try {
+                var numero = await ingresarValor();
+                probar(`Esto deberia dar un numero ${numero}`);
+                quantityInput.value = numero;
+            } catch (error) {
+                probar(`Error: ${error}`);
+            }
+        });
+        // Creo el elemento Cantidad Maxima
+        var quantityMax = document.createElement('span');
+        quantityMax.id = `newQuantityMax${totalItems}`;
+        quantityMax.classList.add('newQuantityInput');
+        quantityMax.type = 'text';
+        quantityMax.textContent = MaxMaterial;
+        quantityMax.readOnly = true; // Set the input element as read-only
+   
+        // Creo el elemento Boton de Suma
+        var plusButton = document.createElement('button');
+        plusButton.textContent = '+';
+        plusButton.addEventListener('click', function() {
+            quantityInput.value = parseInt(quantityInput.value) + 1;
+        });
+
+        // Creo el elemento Boton de Resta
+        var minusButton = document.createElement('button');
+        minusButton.textContent = '-';
+        minusButton.addEventListener('click', function() {
+            if (quantityInput.value > 0) {
+                quantityInput.value = parseInt(quantityInput.value) - 1;
+            }
+        });
+
+        // Agrego los elementos al div
+        itemDiv.appendChild(itemCode);
+        itemDiv.appendChild(itemNameInput);
+        itemDiv.appendChild(quantityMax);
+        itemDiv.appendChild(quantityInput);
+        itemDiv.appendChild(plusButton);
+        itemDiv.appendChild(minusButton);
+
+        // Agrego el div al documento
+        document.getElementById('items').appendChild(itemDiv);
+
+        // Limpio los campos
+        LimpiarCampos();
+
+        // Create Item object
+        var newItem = new Item(Codigo, Material, varMaterial, MaxMaterial);
+        items.push(newItem);
+
+        // Save items to localStorage
+        localStorage.setItem('items', JSON.stringify(items));
+    }
+}
+
+function LimpiarCampos() {
+    document.getElementById('newCodigo').value = '';
+    document.getElementById('newItemInput').value = '';
+    document.getElementById('newItemInput').placeholder='Material';
+    document.getElementById('newQuantityInput').value = '';
+    document.getElementById('newCodigo').focus();
+}
 
 function probar(datos){
     console.log(datos);
@@ -65,90 +160,21 @@ function openPopup(id) {
             popup.document.body.appendChild(updateButton);
 }
 */
-function agregar(Codigo, Material, MaxMaterial) {
-    if (Material !== '') {
-        totalItems++;
-        var itemDiv = document.createElement('div');
-        var itemCode = document.createElement('input');
-        probar(totalItems);
-
-        // Creo el elemento Codigo
-        var itemCode = document.createElement('input');
-        itemCode.id = `newCodigo${totalItems}`;
-        itemCode.classList.add('newCodigo');
-        itemCode.type = 'text';
-        itemCode.value = Codigo;
-        itemCode.readOnly = true; // Set the input element as read-only
-
-        // Creo el elemento Material
-        var itemNameInput = document.createElement('input');
-        itemNameInput.id = `newItemInput${totalItems}`;
-        itemNameInput.classList.add('newItemInput');
-        itemNameInput.type = 'text';
-        itemNameInput.value = Material;
-        
-        // Creo el elemento Cantidad Variable
-        var quantityInput = document.createElement('input');
-        quantityInput.id = `newQuantityInput${totalItems}`;
-        quantityInput.classList.add('newQuantityInput');
-        quantityInput.type = 'number';
-        quantityInput.value = MaxMaterial;
-        quantityInput.addEventListener('click', function() {
-            quantityInput.value = ingresarValor();
-        });
-
-        // Creo el elemento Cantidad Maxima
-        var quantityMax = document.createElement('input');
-        quantityMax.id = `newQuantityMax${totalItems}`;
-        quantityMax.classList.add('newQuantityInput');
-        quantityMax.type = 'number';
-        quantityMax.value = MaxMaterial;
-        quantityMax.readOnly = true; // Set the input element as read-only
-   
-        // Creo el elemento Boton de Suma
-        var plusButton = document.createElement('button');
-        plusButton.textContent = '+';
-        plusButton.addEventListener('click', function() {
-            quantityInput.value = parseInt(quantityInput.value) + 1;
-        });
-
-        // Creo el elemento Boton de Resta
-        var minusButton = document.createElement('button');
-        minusButton.textContent = '-';
-        minusButton.addEventListener('click', function() {
-            if (quantityInput.value > 0) {
-                quantityInput.value = parseInt(quantityInput.value) - 1;
-            }
-        });
-
-        // Agrego los elementos al div
-        itemDiv.appendChild(itemCode);
-        itemDiv.appendChild(itemNameInput);
-        itemDiv.appendChild(quantityInput);
-        itemDiv.appendChild(quantityMax);
-        itemDiv.appendChild(plusButton);
-        itemDiv.appendChild(minusButton);
-
-        // Agrego el div al documento
-        document.getElementById('items').appendChild(itemDiv);
-
-        // Limpio los campos
-        document.getElementById('newCodigo').value = '';
-        document.getElementById('newItemInput').value = '';
-        document.getElementById('newItemInput').placeholder='Material';
-        document.getElementById('newQuantityInput').value = '';
-        document.getElementById('newCodigo').focus();
-
-        // Agrego el item al array
-        items.push(new Item(Codigo, Material, MaxMaterial, MaxMaterial));
+function recuperarCampos() {
+    const items = JSON.parse(localStorage.getItem('items')) || [];
+    const totalItems = items.length;
+    
+    for (let i = 0; i < totalItems; i++) {
+        const { Codigo, Material, Cantidad, Maximo } = items[i];
+        agregar(Codigo, Material, Cantidad, Maximo);
     }
-
 }
+
 
 // Agrego el evento al boton y recupero los valores de los inputs
 document.getElementById('newItemButton').addEventListener('click', function() {
     var Codigo = document.getElementById('newCodigo').value;
     var Material = document.getElementById('newItemInput').value;
     var Cantidad = document.getElementById('newQuantityInput').value;
-    agregar(Codigo, Material, Cantidad);
+    agregar(Codigo, Material, Cantidad, Cantidad);
 });
